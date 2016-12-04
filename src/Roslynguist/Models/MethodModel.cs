@@ -1,18 +1,22 @@
 ﻿namespace Roslynguist.Models
 {
+    using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using Microsoft.CodeAnalysis;
+    using Microsoft.CodeAnalysis.CSharp.Syntax;
 
     public class MethodModel
     {
-        public readonly ISymbol OwnerClass;
+        public IMethodSymbol MethodSymbol;
+        public readonly MethodDeclarationSyntax MethodSyntax;
         private readonly List<ISymbol> _callers = new List<ISymbol>();
         private readonly List<ISymbol> _callees = new List<ISymbol>();
 
-        public MethodModel(ISymbol owner)
+        public MethodModel(IMethodSymbol methodSymbol, ISymbol owner, MethodDeclarationSyntax syntax)
         {
-            OwnerClass = owner;
+            MethodSymbol = methodSymbol;
+            MethodSyntax = syntax;
         }
 
         public IReadOnlyCollection<ISymbol> MethodCallers => new ReadOnlyCollection<ISymbol>(_callers);
@@ -20,12 +24,16 @@
 
         public void AddCaller(ISymbol caller)
         {
-            
+            if (caller == null)
+                throw new ArgumentNullException(nameof(caller));
+            _callers.Add(caller);
         }
 
-        public void AddCallee(ISymbol calee)
+        public void AddCallee(ISymbol callee)
         {
-            
+            if (callee == null)
+                throw new ArgumentNullException(nameof(callee));
+            _callees.Add(callee);
         }
     }
 }
