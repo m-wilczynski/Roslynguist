@@ -100,6 +100,7 @@
     <Compile Include="Analyzers\MethodAnalyzers\MethodCallAnalyzer.cs" />
     <Compile Include="Analyzers\SyntaxAnalyzer.cs" />
     <Compile Include="Models\MethodModel.cs" />
+    <Compile Include="Models\SemanticModelWithDescendants.cs" />
     <Compile Include="Selectors\SyntaxSelector.cs" />
     <Compile Include="SolutionLoader.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

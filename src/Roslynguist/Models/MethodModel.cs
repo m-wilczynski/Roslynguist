@@ -13,7 +13,7 @@
         private readonly List<ISymbol> _callers = new List<ISymbol>();
         private readonly List<ISymbol> _callees = new List<ISymbol>();
 
-        public MethodModel(IMethodSymbol methodSymbol, ISymbol owner, MethodDeclarationSyntax syntax)
+        public MethodModel(IMethodSymbol methodSymbol, MethodDeclarationSyntax syntax)
         {
             MethodSymbol = methodSymbol;
             MethodSyntax = syntax;

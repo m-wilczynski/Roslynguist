@@ -3,6 +3,7 @@
     using System.Diagnostics;
     using System.Linq;
     using System.Net;
+    using Analyzers.MethodAnalyzers;
     using Microsoft.CodeAnalysis;
     using Microsoft.CodeAnalysis.CSharp;
     using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -12,21 +13,23 @@
     {
         static void Main(string[] args)
         {
-            var analyst = new SolutionLoader();
-            analyst.AddSolutionToLoad(@"C:\Repositories\Localwire.Graphinder\Localwire.Graphinder.sln");
-            var result = analyst.Load().Result;
-            var projects =
-                result[@"C:\Repositories\Localwire.Graphinder\Localwire.Graphinder.sln"].Projects.Select(
-                    p => p.GetCompilationAsync().Result).ToList();
-            var roots = projects.Select(p => p.SyntaxTrees.Select(st => st.GetRoot()).ToList()).ToList();
-            var semanticModel =
-                projects.Select(p => p.SyntaxTrees.Select(st => p.GetSemanticModel(st)).ToList()).SelectMany(t => t).ToList();
-            var descendats2 =
-                semanticModel.Select(sm => sm.SyntaxTree.GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>()
-                    .Select(n => new { Method = n, Symbol = sm.GetDeclaredSymbol(n) })).SelectMany(t => t).ToList();
+            //var result = analyst.Load().Result;
+            //var projects =
+            //    result[@"C:\Repositories\Localwire.Graphinder\Localwire.Graphinder.sln"].Projects.Select(
+            //        p => p.GetCompilationAsync().Result).ToList();
+            //var roots = projects.Select(p => p.SyntaxTrees.Select(st => st.GetRoot()).ToList()).ToList();
+            //var semanticModel =
+            //    projects.Select(p => p.SyntaxTrees.Select(st => p.GetSemanticModel(st)).ToList()).SelectMany(t => t).ToList();
+            //var descendats2 =
+            //    semanticModel.Select(sm => sm.SyntaxTree.GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>()
+            //        .Select(n => new { Method = n, Symbol = sm.GetDeclaredSymbol(n) })).SelectMany(t => t).ToList();
 
-            Console.WriteLine(descendats2[0].Symbol);
-            Console.WriteLine(descendats2[0].Method);
+
+            var source = new AnalysisAggregateSource();
+            var loaded = source.LoadSolution(@"C:\Repositories\Localwire.Graphinder\Localwire.Graphinder.sln").Result;
+            var methodCallAnalyzer = new MethodCallAnalyzer(source);
+            methodCallAnalyzer.BuildDependencyMap();
+
 
             Console.ReadKey();
 
