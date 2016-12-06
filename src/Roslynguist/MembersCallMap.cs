@@ -28,7 +28,8 @@
         {
             if (WasMapBuilded) return;
 
-            List<InvocationWithSemanticModel> _invocations = new List<InvocationWithSemanticModel>();
+            List<InvocationWithSemanticModel> invocations = new List<InvocationWithSemanticModel>();
+            List<ObjectCreationWithSemanticModel> constructors = new List<ObjectCreationWithSemanticModel>();
 
             foreach (var compilation in MapSource.GetCompilationsPerSolution())
             {
@@ -49,9 +50,17 @@
 
                         if (descendant is InvocationExpressionSyntax)
                         {
-                            _invocations.Add(new InvocationWithSemanticModel
+                            invocations.Add(new InvocationWithSemanticModel
                             {
-                                Invocation = descendant as InvocationExpressionSyntax,
+                                Expression = descendant as InvocationExpressionSyntax,
+                                SemanticModel = model.SemanticModel
+                            });
+                        }
+                        if (descendant is ObjectCreationExpressionSyntax)
+                        {
+                            constructors.Add(new ObjectCreationWithSemanticModel
+                            {
+                                Expression = descendant as ObjectCreationExpressionSyntax,
                                 SemanticModel = model.SemanticModel
                             });
                         }
@@ -59,60 +68,61 @@
                 }
             }
 
-            foreach (var invocation in _invocations)
+            foreach (var invocation in invocations)
             {
-                WireInvocation(invocation);
+                var symbol = invocation.SemanticModel.GetSymbolInfo(invocation.Expression).Symbol;
+                if (symbol == null) continue;
+                WireExpression(symbol, invocation.Expression, invocation.SemanticModel);
+            }
+
+            foreach (var ctor in constructors)
+            {
+                var symbol = ctor.SemanticModel.GetSymbolInfo(ctor.Expression).Symbol;
+                if (symbol == null) continue;
+                WireExpression(symbol, ctor.Expression, ctor.SemanticModel);
             }
 
             WasMapBuilded = true;
         }
 
-        private void WireInvocation(InvocationWithSemanticModel invocation)
+        private void WireExpression(ISymbol expressionSymbol, ExpressionSyntax expression, SemanticModel semanticModel)
         {
-            if (invocation != null)
+            if (expression == null) return;
+
+            List<MemberDeclarationModel> calleeParts;
+            _members.TryGetValue(expressionSymbol, out calleeParts);
+
+            if (calleeParts == null || !calleeParts.Any()) return;
+
+            var caller = expression.FirstAncestorOrSelf<SyntaxNode>(sn =>
+                sn is MemberDeclarationSyntax);
+
+            if (caller == null) return;
+            var parentSymbol = semanticModel.GetDeclaredSymbol(caller);
+            if (parentSymbol == null) return;
+
+            foreach (var calleePart in calleeParts)
             {
-                var symbol = invocation.SemanticModel.GetSymbolInfo(invocation.Invocation.Expression).Symbol;
-                if (symbol == null) return;
-
-                List<MemberDeclarationModel> calleeParts;
-                _members.TryGetValue(symbol, out calleeParts);
-
-                if (calleeParts != null && calleeParts.Any())
-                {
-                    var caller = invocation.Invocation.FirstAncestorOrSelf<SyntaxNode>(sn =>
-                        sn is MemberDeclarationSyntax);
-                    if (caller != null)
-                    {
-                        var parentSymbol = invocation.SemanticModel.GetDeclaredSymbol(caller);
-                        if (parentSymbol != null)
-                        {
-                            foreach (var calleePart in calleeParts)
-                            {
-                                calleePart.AddCaller(parentSymbol);
-                            }
-                            foreach (var callerPart in _members[parentSymbol])
-                            {
-                                callerPart.AddCallee(symbol);
-                            }
-                        }
-                    }
-                }
+                calleePart.AddCaller(parentSymbol);
+            }
+            foreach (var callerPart in _members[parentSymbol])
+            {
+                callerPart.AddCallee(expressionSymbol);
             }
         }
 
         private void AddIfMember(SyntaxNode descendant, SemanticModelWithDescendants model)
         {
-            if (descendant is MemberDeclarationSyntax && !(descendant is NamespaceDeclarationSyntax))
-            {
-                ISymbol symbol = model.SemanticModel.GetDeclaredSymbol(descendant);
-                if (symbol == null) return;
+            if (!(descendant is MemberDeclarationSyntax) || descendant is NamespaceDeclarationSyntax) return;
 
-                //Support for partials
-                if (!_members.ContainsKey(symbol))
-                    _members.Add(symbol, new List<MemberDeclarationModel>());
+            ISymbol symbol = model.SemanticModel.GetDeclaredSymbol(descendant);
+            if (symbol == null) return;
 
-                _members[symbol].Add(new MemberDeclarationModel(symbol, (MemberDeclarationSyntax)descendant));
-            }
+            //Support for partials
+            if (!_members.ContainsKey(symbol))
+                _members.Add(symbol, new List<MemberDeclarationModel>());
+
+            _members[symbol].Add(new MemberDeclarationModel(symbol, (MemberDeclarationSyntax)descendant));
         }
     }
 }

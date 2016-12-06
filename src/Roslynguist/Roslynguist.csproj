@@ -102,6 +102,7 @@
     <Compile Include="MembersCallMap.cs" />
     <Compile Include="Models\InvocationWithSemanticModel.cs" />
     <Compile Include="Models\MemberDeclarationModel.cs" />
+    <Compile Include="Models\ObjectCreationWithSemanticModel.cs" />
     <Compile Include="Models\SemanticModelWithDescendants.cs" />
     <Compile Include="Selectors\SyntaxSelector.cs" />
     <Compile Include="SolutionLoader.cs" />

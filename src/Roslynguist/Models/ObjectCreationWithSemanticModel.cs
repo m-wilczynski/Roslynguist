@@ -3,9 +3,9 @@
     using Microsoft.CodeAnalysis;
     using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-    public class InvocationWithSemanticModel
+    public class ObjectCreationWithSemanticModel
     {
-        public InvocationExpressionSyntax Expression { get; set; }
+        public ObjectCreationExpressionSyntax Expression { get; set; }
         public SemanticModel SemanticModel { get; set; }
     }
 }
