@@ -6,21 +6,21 @@
     using Microsoft.CodeAnalysis;
     using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-    public class MethodModel
+    public class MemberDeclarationModel
     {
-        public IMethodSymbol MethodSymbol;
-        public readonly MethodDeclarationSyntax MethodSyntax;
+        public ISymbol MemberSymbol;
+        public readonly MemberDeclarationSyntax MemberSyntax;
         private readonly List<ISymbol> _callers = new List<ISymbol>();
         private readonly List<ISymbol> _callees = new List<ISymbol>();
 
-        public MethodModel(IMethodSymbol methodSymbol, MethodDeclarationSyntax syntax)
+        public MemberDeclarationModel(ISymbol symbol, MemberDeclarationSyntax syntax)
         {
-            MethodSymbol = methodSymbol;
-            MethodSyntax = syntax;
+            MemberSymbol = symbol;
+            MemberSyntax = syntax;
         }
 
-        public IReadOnlyCollection<ISymbol> MethodCallers => new ReadOnlyCollection<ISymbol>(_callers);
-        public IReadOnlyCollection<ISymbol> MethodCallees => new ReadOnlyCollection<ISymbol>(_callees);
+        public IReadOnlyCollection<ISymbol> Callers => new ReadOnlyCollection<ISymbol>(_callers);
+        public IReadOnlyCollection<ISymbol> Callees => new ReadOnlyCollection<ISymbol>(_callees);
 
         public void AddCaller(ISymbol caller)
         {

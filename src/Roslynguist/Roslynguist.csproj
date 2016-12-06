@@ -99,7 +99,9 @@
     <Compile Include="AnalysisAggregateSource.cs" />
     <Compile Include="Analyzers\MethodAnalyzers\MethodCallAnalyzer.cs" />
     <Compile Include="Analyzers\SyntaxAnalyzer.cs" />
-    <Compile Include="Models\MethodModel.cs" />
+    <Compile Include="MembersCallMap.cs" />
+    <Compile Include="Models\InvocationWithSemanticModel.cs" />
+    <Compile Include="Models\MemberDeclarationModel.cs" />
     <Compile Include="Models\SemanticModelWithDescendants.cs" />
     <Compile Include="Selectors\SyntaxSelector.cs" />
     <Compile Include="SolutionLoader.cs" />
